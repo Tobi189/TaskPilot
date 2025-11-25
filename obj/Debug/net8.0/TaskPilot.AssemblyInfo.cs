@@ -11,10 +11,11 @@
 using System;
 using System.Reflection;
 
+[assembly: Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute("ff31d98c-702a-4d64-9983-d0dd5b7fe5f2")]
 [assembly: System.Reflection.AssemblyCompanyAttribute("TaskPilot")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+46f821a0da9309abfaa540d8d41a351dc5c89984")]
 [assembly: System.Reflection.AssemblyProductAttribute("TaskPilot")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TaskPilot")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

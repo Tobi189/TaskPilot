@@ -1,0 +1,193 @@
+﻿@page
+@model TaskPilot.Pages.Account.RegisterModel
+@{
+}
+
+<style>
+    /* Page background + centering */
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background-color: #282c34;
+        color: white;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .auth-wrapper {
+        width: 100%;
+        max-width: 420px;
+        padding: 1.5rem;
+        box-sizing: border-box;
+    }
+
+    .auth-card {
+        background-color: #1e1e1e;
+        border-radius: 12px;
+        padding: 2rem 2.25rem;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+        border: 1px solid #333;
+    }
+
+    .auth-title {
+        font-size: 1.6rem;
+        margin-bottom: 0.25rem;
+        text-align: center;
+    }
+
+    .auth-subtitle {
+        font-size: 0.9rem;
+        color: #aaaaaa;
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .auth-title span {
+        color: #61dafb;
+    }
+
+    /* Form controls */
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.25rem;
+        font-size: 0.9rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.55rem 0.75rem;
+        border-radius: 6px;
+        border: 1px solid #555;
+        background-color: #333;
+        color: #ffffff;
+        box-sizing: border-box;
+        font-size: 0.95rem;
+    }
+
+        .form-control::placeholder {
+            color: #777;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #61dafb;
+            box-shadow: 0 0 0 1px #61dafb;
+        }
+
+    /* Validation */
+    .text-danger {
+        color: #ff6b6b;
+        font-size: 0.85rem;
+    }
+
+    .validation-summary-errors {
+        margin-bottom: 1rem;
+        padding: 0.75rem 1rem;
+        border-radius: 6px;
+        background-color: #3a1e1e;
+        border: 1px solid #ff6b6b;
+        font-size: 0.9rem;
+    }
+
+    /* Button */
+    .btn-primary {
+        width: 100%;
+        border: none;
+        padding: 0.65rem 1rem;
+        border-radius: 6px;
+        background-color: #61dafb;
+        color: #1e1e1e;
+        font-weight: bold;
+        cursor: pointer;
+        font-size: 0.95rem;
+        margin-top: 0.5rem;
+        transition: transform 0.05s ease-out, box-shadow 0.05s ease-out, background-color 0.15s ease-out;
+    }
+
+        .btn-primary:hover {
+            background-color: #4fb6e6;
+            box-shadow: 0 0 12px rgba(97, 218, 251, 0.6);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+
+    /* Footer / “already have account?” */
+    .auth-footer {
+        margin-top: 1rem;
+        font-size: 0.85rem;
+        text-align: center;
+        color: #bbbbbb;
+    }
+
+        .auth-footer a {
+            color: #61dafb;
+            text-decoration: none;
+        }
+
+            .auth-footer a:hover {
+                text-decoration: underline;
+            }
+</style>
+
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <div class="auth-title">
+            <span>TaskPilot</span> Sign up
+        </div>
+        <div class="auth-subtitle">
+            Create your account to start tracking tasks.
+        </div>
+
+        <form method="post">
+            <!-- Summary of all model errors -->
+            <div asp-validation-summary="All" class="text-danger validation-summary-errors"></div>
+
+            <div class="form-group">
+                <label asp-for="Name" class="form-label"></label>
+                <input asp-for="Name"
+                       class="form-control"
+                       autocomplete="name"
+                       placeholder="Choose a username" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email"
+                       class="form-control"
+                       type="email"
+                       autocomplete="username"
+                       placeholder="you@example.com" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Password" class="form-label"></label>
+                <input asp-for="Password"
+                       class="form-control"
+                       type="password"
+                       autocomplete="new-password"
+                       placeholder="Create a password" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn-primary">Create account</button>
+        </form>
+
+        <div class="auth-footer">
+            Already have an account?
+            <a asp-page="/Account/Login">Log in</a>
+        </div>
+    </div>
+</div>
+
