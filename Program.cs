@@ -10,7 +10,6 @@ builder.Services
     .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        // Paths used for automatic redirects during the authentication flow.
         options.LoginPath = "/Account/Login";
         options.LogoutPath = "/Account/Logout";
         options.AccessDeniedPath = "/Account/Login";
@@ -21,7 +20,6 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline for production environments.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
@@ -33,11 +31,21 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// Enable authentication and authorization middleware.
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Map Razor Pages endpoints.
+app.MapGet("/", async context =>
+{
+    if (context.User.Identity?.IsAuthenticated == true)
+        context.Response.Redirect("/Index");
+    else
+        context.Response.Redirect("/Account/Login");
+
+    await Task.CompletedTask;
+});
+
+
+// Razor Pages
 app.MapRazorPages();
 
 app.Run();
