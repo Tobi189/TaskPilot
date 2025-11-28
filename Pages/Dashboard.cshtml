@@ -1,12 +1,376 @@
 ﻿@page
-@model DashboardModel
+@model TaskPilot.Pages.DashboardModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Dashboard";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-    <a asp-page="/Account/Logout">Logout</a>
+<style>
+    body {
+        margin: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background-color: #282c34;
+        color: #ffffff;
+    }
 
+    .dashboard-root {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Top bar */
+    .dashboard-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 1.5rem;
+        background-color: #1e1e1e;
+        border-bottom: 0.05rem solid #333333;
+    }
+
+    .dashboard-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+
+        .dashboard-title span {
+            color: #61dafb;
+            font-weight: 700;
+        }
+
+    .dashboard-user {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 0.95rem;
+    }
+
+    .dashboard-logout {
+        padding: 0.4rem 0.9rem;
+        border-radius: 999rem;
+        border: 0.05rem solid #61dafb;
+        background-color: transparent;
+        color: #61dafb;
+        font-size: 0.85rem;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+        .dashboard-logout:hover {
+            background-color: #61dafb;
+            color: #1e1e1e;
+        }
+
+    /* Main layout */
+    .dashboard-main {
+        flex: 1;
+        display: flex;
+        flex-direction: row;
+        gap: 1.5rem;
+        padding: 1.5rem;
+        box-sizing: border-box;
+    }
+
+    /* Left column (actions) */
+    .dashboard-sidebar {
+        width: 22%;
+        max-width: 18rem;
+        min-width: 12rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .sidebar-card {
+        background-color: #1e1e1e;
+        border-radius: 0.75rem;
+        padding: 1rem 1.25rem;
+        border: 0.05rem solid #333333;
+        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.5);
+    }
+
+    .sidebar-heading {
+        font-size: 0.95rem;
+        margin-bottom: 0.75rem;
+        font-weight: 600;
+    }
+
+    .btn-new-task {
+        width: 100%;
+        border: none;
+        padding: 0.7rem 1rem;
+        border-radius: 0.5rem;
+        background-color: #61dafb;
+        color: #1e1e1e;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 0.95rem;
+    }
+
+        .btn-new-task:hover {
+            background-color: #4fb6e6;
+        }
+
+    /* Filter placeholders */
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+        font-size: 0.85rem;
+    }
+
+    .filter-label {
+        opacity: 0.8;
+    }
+
+    .filter-select {
+        width: 100%;
+        padding: 0.4rem 0.6rem;
+        border-radius: 0.4rem;
+        border: 0.05rem solid #444444;
+        background-color: #262626;
+        color: #ffffff;
+        font-size: 0.85rem;
+    }
+
+    /* Right column (task list) */
+    .dashboard-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .content-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .content-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .content-meta {
+        font-size: 0.85rem;
+        color: #bbbbbb;
+    }
+
+    .task-list {
+        background-color: #1e1e1e;
+        border-radius: 0.75rem;
+        padding: 1rem 1.25rem;
+        border: 0.05rem solid #333333;
+        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.5);
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .task-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.6rem 0.4rem;
+        border-radius: 0.5rem;
+        background-color: #262626;
+    }
+
+    .task-main {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        flex: 1;
+    }
+
+    .task-title {
+        font-size: 0.95rem;
+        font-weight: 600;
+    }
+
+    .task-preview {
+        font-size: 0.8rem;
+        color: #bbbbbb;
+        opacity: 0.9;
+    }
+
+    .task-tags {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.75rem;
+    }
+
+    .badge-status,
+    .badge-priority {
+        padding: 0.18rem 0.55rem;
+        border-radius: 999rem;
+        border: 0.05rem solid transparent;
+        white-space: nowrap;
+    }
+
+    .badge-status-pending {
+        background-color: #3b3b3b;
+        color: #f0f0f0;
+    }
+
+    .badge-status-inprogress {
+        background-color: #1f4f7f;
+        color: #e5f3ff;
+    }
+
+    .badge-status-done {
+        background-color: #1f5f3b;
+        color: #e3ffef;
+    }
+
+    .badge-priority-low {
+        border-color: #8abf5a;
+        color: #c8f3a3;
+    }
+
+    .badge-priority-medium {
+        border-color: #f5c16b;
+        color: #ffe0a6;
+    }
+
+    .badge-priority-high {
+        border-color: #ff6b6b;
+        color: #ffc1c1;
+    }
+
+    .task-actions {
+        display: flex;
+        flex-direction: row;
+        gap: 0.4rem;
+        font-size: 0.8rem;
+    }
+
+    .task-link {
+        background: none;
+        border: none;
+        padding: 0.2rem 0.5rem;
+        border-radius: 0.4rem;
+        cursor: pointer;
+        color: #61dafb;
+        text-decoration: none;
+    }
+
+        .task-link:hover {
+            background-color: #1b3b4a;
+        }
+
+    .task-empty {
+        font-size: 0.9rem;
+        color: #bbbbbb;
+        text-align: center;
+        padding: 1.25rem 0;
+    }
+
+    /* Basic responsiveness – note the @@ */
+    @@media (max-width: 48rem) {
+        .dashboard-main {
+            flex-direction: column;
+        }
+
+        .dashboard-sidebar {
+            width: 100%;
+            max-width: none;
+        }
+    }
+</style>
+
+<div class="dashboard-root">
+    <header class="dashboard-header">
+        <div class="dashboard-title">
+            <span>TaskPilot</span> Dashboard
+        </div>
+        <div class="dashboard-user">
+            <span>@Model.Username</span>
+            <a asp-page="/Account/Logout" class="dashboard-logout">Logout</a>
+        </div>
+    </header>
+
+    <main class="dashboard-main">
+        <!-- Left column: actions -->
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-card">
+                <div class="sidebar-heading">Actions</div>
+                <button class="btn-new-task">
+                    + New Task
+                </button>
+
+                <div class="filter-group">
+                    <div class="filter-label">Status</div>
+                    <select class="filter-select">
+                        <option>All</option>
+                        <option>Pending</option>
+                        <option>In progress</option>
+                        <option>Done</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <div class="filter-label">Priority</div>
+                    <select class="filter-select">
+                        <option>All</option>
+                        <option>Low</option>
+                        <option>Medium</option>
+                        <option>High</option>
+                    </select>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Right column: task list -->
+        <section class="dashboard-content">
+            <div class="content-header">
+                <div class="content-title">Your tasks</div>
+                <div class="content-meta">
+                    Overview of your current tasks
+                </div>
+            </div>
+
+            <div class="task-list">
+                @* Dummy rows for now – later replace with foreach over Model.Tasks *@
+                <div class="task-row">
+                    <div class="task-main">
+                        <div class="task-title">Example task title</div>
+                        <div class="task-preview">
+                            Short description of what needs to be done with this task…
+                        </div>
+                        <div class="task-tags">
+                            <span class="badge-status badge-status-pending">Pending</span>
+                            <span class="badge-priority badge-priority-high">High</span>
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        <button class="task-link">Edit</button>
+                        <button class="task-link">Delete</button>
+                    </div>
+                </div>
+
+                <div class="task-row">
+                    <div class="task-main">
+                        <div class="task-title">Another demo task</div>
+                        <div class="task-preview">
+                            This one is already in progress to show a different status badge.
+                        </div>
+                        <div class="task-tags">
+                            <span class="badge-status badge-status-inprogress">In progress</span>
+                            <span class="badge-priority badge-priority-medium">Medium</span>
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        <button class="task-link">Edit</button>
+                        <button class="task-link">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
 </div>

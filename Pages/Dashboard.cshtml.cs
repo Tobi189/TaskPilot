@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Logging;
 
 namespace TaskPilot.Pages
 {
@@ -9,6 +9,8 @@ namespace TaskPilot.Pages
     {
         private readonly ILogger<DashboardModel> _logger;
 
+        public string Username { get; private set; } = string.Empty;
+
         public DashboardModel(ILogger<DashboardModel> logger)
         {
             _logger = logger;
@@ -16,7 +18,7 @@ namespace TaskPilot.Pages
 
         public void OnGet()
         {
-
+            Username = User.Identity?.Name ?? "User";
         }
     }
 }
