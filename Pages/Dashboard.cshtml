@@ -271,6 +271,131 @@
         padding: 1.25rem 0;
     }
 
+    .new-task-overlay {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.65);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+
+        .new-task-overlay.hidden {
+            display: none;
+        }
+
+    .new-task-modal {
+        width: 90%;
+        max-width: 32rem;
+        background-color: #1e1e1e;
+        border-radius: 0.75rem;
+        border: 0.05rem solid #333333;
+        box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.7);
+        padding: 1.25rem 1.5rem;
+        box-sizing: border-box;
+    }
+
+    .new-task-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+    }
+
+        .new-task-header h2 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+    .new-task-close {
+        background: none;
+        border: none;
+        color: #bbbbbb;
+        font-size: 1.4rem;
+        cursor: pointer;
+    }
+
+        .new-task-close:hover {
+            color: #ffffff;
+        }
+
+    .new-task-body {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        font-size: 0.9rem;
+    }
+
+    .form-row {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .new-task-input,
+    .new-task-textarea,
+    .new-task-select {
+        width: 100%;
+        padding: 0.45rem 0.6rem;
+        border-radius: 0.4rem;
+        border: 0.05rem solid #444444;
+        background-color: #262626;
+        color: #ffffff;
+        font-size: 0.9rem;
+        box-sizing: border-box;
+    }
+
+        .new-task-input:focus,
+        .new-task-textarea:focus,
+        .new-task-select:focus {
+            outline: none;
+            border-color: #61dafb;
+            box-shadow: 0 0 0 0.05rem #61dafb;
+        }
+
+    .new-task-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    .new-task-cancel,
+    .new-task-save {
+        padding: 0.45rem 0.9rem;
+        border-radius: 0.4rem;
+        font-size: 0.9rem;
+        cursor: pointer;
+        border: none;
+    }
+
+    .new-task-cancel {
+        background-color: transparent;
+        color: #bbbbbb;
+    }
+
+        .new-task-cancel:hover {
+            background-color: #333333;
+        }
+
+    .new-task-save {
+        background-color: #61dafb;
+        color: #1e1e1e;
+        font-weight: 600;
+    }
+
+        .new-task-save:hover {
+            background-color: #4fb6e6;
+        }
+
+
     /* Basic responsiveness – note the @@ */
     @@media (max-width: 48rem) {
         .dashboard-main {
@@ -284,7 +409,58 @@
     }
 </style>
 
+
+
 <div class="dashboard-root">
+    <div id="new-task-overlay" class="new-task-overlay hidden">
+        <div class="new-task-modal">
+            <div class="new-task-header">
+                <h2>New Task</h2>
+                <button type="button" class="new-task-close" id="closeNewTask">&times;</button>
+            </div>
+
+            <form method="post">
+                <!-- later we'll add asp-page-handler="CreateTask" -->
+                <div class="new-task-body">
+                    <div class="form-group">
+                        <label for="Title">Title</label>
+                        <input id="Title" name="Title" class="new-task-input" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="Content">Content</label>
+                        <textarea id="Content" name="Content" class="new-task-textarea" rows="4"></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="Status">Status</label>
+                            <select id="Status" name="Status" class="new-task-select">
+                                <option value="pending">Pending</option>
+                                <option value="in_progress">In progress</option>
+                                <option value="done">Done</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="Priority">Priority</label>
+                            <select id="Priority" name="Priority" class="new-task-select">
+                                <option value="0">Low</option>
+                                <option value="1">Medium</option>
+                                <option value="2">High</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="new-task-footer">
+                    <button type="button" class="new-task-cancel" id="cancelNewTask">Cancel</button>
+                    <button type="submit" class="new-task-save">Save task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <header class="dashboard-header">
         <div class="dashboard-title">
             <span>TaskPilot</span> Dashboard
@@ -374,3 +550,33 @@
         </section>
     </main>
 </div>
+
+<script>
+    (function () {
+        const overlay = document.getElementById("new-task-overlay");
+        const openBtn = document.querySelector(".btn-new-task");
+        const closeBtn = document.getElementById("closeNewTask");
+        const cancelBtn = document.getElementById("cancelNewTask");
+
+        if (!overlay || !openBtn) return;
+
+        function openModal() {
+            overlay.classList.remove("hidden");
+        }
+
+        function closeModal() {
+            overlay.classList.add("hidden");
+        }
+
+        openBtn.addEventListener("click", openModal);
+        closeBtn.addEventListener("click", closeModal);
+        cancelBtn.addEventListener("click", closeModal);
+
+        // Optional: close when clicking outside the modal
+        overlay.addEventListener("click", function (e) {
+            if (e.target === overlay) {
+                closeModal();
+            }
+        });
+    })();
+</script>
