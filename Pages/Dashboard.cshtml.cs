@@ -5,11 +5,11 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 namespace TaskPilot.Pages
 {
     [Authorize]
-    public class IndexModel : PageModel
+    public class DashboardModel : PageModel
     {
-        private readonly ILogger<IndexModel> _logger;
+        private readonly ILogger<DashboardModel> _logger;
 
-        public IndexModel(ILogger<IndexModel> logger)
+        public DashboardModel(ILogger<DashboardModel> logger)
         {
             _logger = logger;
         }
