@@ -248,6 +248,7 @@
         flex-direction: row;
         gap: 0.4rem;
         font-size: 0.8rem;
+        align-items: center;
     }
 
     .task-link {
@@ -271,6 +272,7 @@
         padding: 1.25rem 0;
     }
 
+    /* New Task modal */
     .new-task-overlay {
         position: fixed;
         inset: 0;
@@ -395,7 +397,6 @@
             background-color: #4fb6e6;
         }
 
-
     /* Basic responsiveness – note the @@ */
     @@media (max-width: 48rem) {
         .dashboard-main {
@@ -409,9 +410,8 @@
     }
 </style>
 
-
-
 <div class="dashboard-root">
+    <!-- Modal overlay -->
     <div id="new-task-overlay" class="new-task-overlay hidden">
         <div class="new-task-modal">
             <div class="new-task-header">
@@ -419,9 +419,9 @@
                 <button type="button" class="new-task-close" id="closeNewTask">&times;</button>
             </div>
 
-            <form method="post" asp-page-handler="CreateTask">
+            <form method="post" asp-page-handler="SaveTask">
+                <input type="hidden" id="TaskId" name="TaskId" />
 
-                <!-- later we'll add asp-page-handler="CreateTask" -->
                 <div class="new-task-body">
                     <div class="form-group">
                         <label for="Title">Title</label>
@@ -462,6 +462,7 @@
         </div>
     </div>
 
+    <!-- Header -->
     <header class="dashboard-header">
         <div class="dashboard-title">
             <span>TaskPilot</span> Dashboard
@@ -472,12 +473,13 @@
         </div>
     </header>
 
+    <!-- Main content -->
     <main class="dashboard-main">
         <!-- Left column: actions -->
         <aside class="dashboard-sidebar">
             <div class="sidebar-card">
                 <div class="sidebar-heading">Actions</div>
-                <button class="btn-new-task">
+                <button type="button" class="btn-new-task">
                     + New Task
                 </button>
 
@@ -564,14 +566,25 @@
                                 </div>
                             </div>
                             <div class="task-actions">
-                                <button class="task-link">Edit</button>
-                                <button class="task-link">Delete</button>
+                                <button type="button"
+                                        class="task-link edit-task-button"
+                                        data-id="@task.Id"
+                                        data-title="@task.Title"
+                                        data-content="@task.Content"
+                                        data-status="@task.Status"
+                                        data-priority="@task.Priority">
+                                    Edit
+                                </button>
+
+                                <form method="post" asp-page-handler="DeleteTask" style="display:inline">
+                                    <input type="hidden" name="id" value="@task.Id" />
+                                    <button type="submit" class="task-link">Delete</button>
+                                </form>
                             </div>
                         </div>
                     }
                 }
             </div>
-
         </section>
     </main>
 </div>
@@ -583,6 +596,15 @@
         const closeBtn = document.getElementById("closeNewTask");
         const cancelBtn = document.getElementById("cancelNewTask");
 
+        const taskIdInput = document.getElementById("TaskId");
+        const titleInput = document.getElementById("Title");
+        const contentInput = document.getElementById("Content");
+        const statusSelect = document.getElementById("Status");
+        const prioritySelect = document.getElementById("Priority");
+        const headerTitle = document.querySelector(".new-task-header h2");
+        const saveButton = document.querySelector(".new-task-save");
+        const editButtons = document.querySelectorAll(".edit-task-button");
+
         if (!overlay || !openBtn) return;
 
         function openModal() {
@@ -593,15 +615,57 @@
             overlay.classList.add("hidden");
         }
 
-        openBtn.addEventListener("click", openModal);
-        closeBtn.addEventListener("click", closeModal);
-        cancelBtn.addEventListener("click", closeModal);
+        function openForCreate() {
+            if (taskIdInput) taskIdInput.value = "";
+            if (titleInput) titleInput.value = "";
+            if (contentInput) contentInput.value = "";
+            if (statusSelect) statusSelect.value = "pending";
+            if (prioritySelect) prioritySelect.value = "0";
+            if (headerTitle) headerTitle.textContent = "New Task";
+            if (saveButton) saveButton.textContent = "Save task";
+            openModal();
+        }
 
-        // Optional: close when clicking outside the modal
+        function openForEdit(btn) {
+            const id = btn.getAttribute("data-id");
+            const title = btn.getAttribute("data-title") || "";
+            const content = btn.getAttribute("data-content") || "";
+            const status = btn.getAttribute("data-status") || "pending";
+            const priority = btn.getAttribute("data-priority") || "0";
+
+            if (taskIdInput) taskIdInput.value = id;
+            if (titleInput) titleInput.value = title;
+            if (contentInput) contentInput.value = content;
+            if (statusSelect) statusSelect.value = status;
+            if (prioritySelect) prioritySelect.value = priority;
+            if (headerTitle) headerTitle.textContent = "Edit Task";
+            if (saveButton) saveButton.textContent = "Save changes";
+            openModal();
+        }
+
+        // + New Task button
+        openBtn.addEventListener("click", function () {
+            openForCreate();
+        });
+
+        if (closeBtn) {
+            closeBtn.addEventListener("click", closeModal);
+        }
+        if (cancelBtn) {
+            cancelBtn.addEventListener("click", closeModal);
+        }
+
         overlay.addEventListener("click", function (e) {
             if (e.target === overlay) {
                 closeModal();
             }
+        });
+
+        // Edit buttons on each row
+        editButtons.forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                openForEdit(btn);
+            });
         });
     })();
 </script>

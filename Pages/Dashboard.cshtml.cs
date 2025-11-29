@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -15,10 +18,12 @@ namespace TaskPilot.Pages
 
         public string Username { get; private set; } = string.Empty;
 
-        // Tasks shown on the page
         public List<TaskItem> Tasks { get; private set; } = new();
 
-        // Bound to the New Task modal form
+        // For create / edit modal
+        [BindProperty]
+        public int? TaskId { get; set; }
+
         [BindProperty]
         public string Title { get; set; } = string.Empty;
 
@@ -43,20 +48,18 @@ namespace TaskPilot.Pages
             LoadTasks();
         }
 
-        // Handler for <form method="post" asp-page-handler="CreateTask">
-        public async Task<IActionResult> OnPostCreateTaskAsync()
+        // Handles both create and edit via asp-page-handler="SaveTask"
+        public async Task<IActionResult> OnPostSaveTaskAsync()
         {
             Username = User.Identity?.Name ?? "User";
 
-            // Basic validation: title is required
             if (string.IsNullOrWhiteSpace(Title))
             {
                 ModelState.AddModelError(nameof(Title), "Title is required.");
-                LoadTasks(); // so the list still shows
+                LoadTasks();
                 return Page();
             }
 
-            // Get user id from claims
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
             {
@@ -67,29 +70,74 @@ namespace TaskPilot.Pages
             await using var conn = new NpgsqlConnection(_connectionString);
             await conn.OpenAsync();
 
-            const string insertSql = @"
-                INSERT INTO tasks (user_id, title, content, status, priority)
-                VALUES (@user_id, @title, @content, @status, @priority);
-            ";
-
-            await using (var cmd = new NpgsqlCommand(insertSql, conn))
+            if (TaskId == null || TaskId == 0)
             {
+                // CREATE
+                const string insertSql = @"
+                    INSERT INTO tasks (user_id, title, content, status, priority)
+                    VALUES (@user_id, @title, @content, @status, @priority);
+                ";
+
+                await using var cmd = new NpgsqlCommand(insertSql, conn);
                 cmd.Parameters.AddWithValue("@user_id", userId);
                 cmd.Parameters.AddWithValue("@title", Title);
                 cmd.Parameters.AddWithValue("@content", (object?)Content ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@status", Status ?? "pending");
                 cmd.Parameters.AddWithValue("@priority", Priority);
+                await cmd.ExecuteNonQueryAsync();
+            }
+            else
+            {
+                // UPDATE
+                const string updateSql = @"
+                    UPDATE tasks
+                    SET title = @title,
+                        content = @content,
+                        status = @status,
+                        priority = @priority,
+                        updated_at = NOW()
+                    WHERE id = @id AND user_id = @user_id;
+                ";
 
+                await using var cmd = new NpgsqlCommand(updateSql, conn);
+                cmd.Parameters.AddWithValue("@id", TaskId.Value);
+                cmd.Parameters.AddWithValue("@user_id", userId);
+                cmd.Parameters.AddWithValue("@title", Title);
+                cmd.Parameters.AddWithValue("@content", (object?)Content ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@status", Status ?? "pending");
+                cmd.Parameters.AddWithValue("@priority", Priority);
                 await cmd.ExecuteNonQueryAsync();
             }
 
-            // After insert, redirect to GET so the form clears and list reloads
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnPostDeleteTaskAsync(int id)
+        {
+            Username = User.Identity?.Name ?? "User";
+
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+            {
+                _logger.LogError("Could not resolve user id from claims.");
+                return Forbid();
+            }
+
+            await using var conn = new NpgsqlConnection(_connectionString);
+            await conn.OpenAsync();
+
+            const string deleteSql = @"DELETE FROM tasks WHERE id = @id AND user_id = @user_id;";
+
+            await using var cmd = new NpgsqlCommand(deleteSql, conn);
+            cmd.Parameters.AddWithValue("@id", id);
+            cmd.Parameters.AddWithValue("@user_id", userId);
+            await cmd.ExecuteNonQueryAsync();
+
             return RedirectToPage();
         }
 
         private void LoadTasks()
         {
-            // Get user id from auth cookie
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
             {
