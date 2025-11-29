@@ -397,6 +397,29 @@
             background-color: #4fb6e6;
         }
 
+    .filter-form {
+        margin-top: 0.75rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .btn-filter-apply {
+        align-self: flex-end;
+        padding: 0.35rem 0.8rem;
+        border-radius: 0.4rem;
+        border: 0.05rem solid #444444;
+        background-color: #333333;
+        color: #dddddd;
+        font-size: 0.85rem;
+        cursor: pointer;
+    }
+
+        .btn-filter-apply:hover {
+            background-color: #444444;
+        }
+
+
     /* Basic responsiveness – note the @@ */
     @@media (max-width: 48rem) {
         .dashboard-main {
@@ -478,31 +501,58 @@
         <!-- Left column: actions -->
         <aside class="dashboard-sidebar">
             <div class="sidebar-card">
-                <div class="sidebar-heading">Actions</div>
-                <button type="button" class="btn-new-task">
-                    + New Task
-                </button>
+    <div class="sidebar-heading">Actions</div>
 
-                <div class="filter-group">
-                    <div class="filter-label">Status</div>
-                    <select class="filter-select">
-                        <option>All</option>
-                        <option>Pending</option>
-                        <option>In progress</option>
-                        <option>Done</option>
-                    </select>
-                </div>
+    <!-- New Task just opens modal, should NOT submit filter form -->
+    <button type="button" class="btn-new-task">
+        + New Task
+    </button>
 
-                <div class="filter-group">
-                    <div class="filter-label">Priority</div>
-                    <select class="filter-select">
-                        <option>All</option>
-                        <option>Low</option>
-                        <option>Medium</option>
-                        <option>High</option>
-                    </select>
-                </div>
-            </div>
+    <!-- Filters: this form does a GET and binds to StatusFilter / PriorityFilter -->
+    <form method="get" class="filter-form">
+        <div class="filter-group">
+            <div class="filter-label">Status</div>
+                        <select class="filter-select" name="StatusFilter">
+                            <option value="" selected="@(string.IsNullOrEmpty(Model.StatusFilter))">
+                                All
+                            </option>
+                            <option value="pending" selected="@(Model.StatusFilter == "pending")">
+                                Pending
+                            </option>
+                            <option value="in_progress" selected="@(Model.StatusFilter == "in_progress")">
+                                In progress
+                            </option>
+                            <option value="done" selected="@(Model.StatusFilter == "done")">
+                                Done
+                            </option>
+                        </select>
+
+        </div>
+
+        <div class="filter-group">
+            <div class="filter-label">Priority</div>
+                        <select class="filter-select" name="PriorityFilter">
+                            <option value="" selected="@(Model.PriorityFilter == null)">
+                                All
+                            </option>
+                            <option value="0" selected="@(Model.PriorityFilter == 0)">
+                                Low
+                            </option>
+                            <option value="1" selected="@(Model.PriorityFilter == 1)">
+                                Medium
+                            </option>
+                            <option value="2" selected="@(Model.PriorityFilter == 2)">
+                                High
+                            </option>
+                        </select>
+
+
+        </div>
+
+        <button type="submit" class="btn-filter-apply">Apply</button>
+    </form>
+</div>
+
         </aside>
 
         <!-- Right column: task list -->

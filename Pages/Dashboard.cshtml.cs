@@ -20,6 +20,12 @@ namespace TaskPilot.Pages
 
         public List<TaskItem> Tasks { get; private set; } = new();
 
+        [BindProperty(SupportsGet = true)]
+        public string? StatusFilter { get; set; }
+
+        [BindProperty(SupportsGet = true)]
+        public int? PriorityFilter { get; set; }
+
         // For create / edit modal
         [BindProperty]
         public int? TaskId { get; set; }
@@ -150,15 +156,41 @@ namespace TaskPilot.Pages
             using var conn = new NpgsqlConnection(_connectionString);
             conn.Open();
 
-            const string sql = @"
-                SELECT id, title, content, status, priority, created_at, updated_at
-                FROM tasks
-                WHERE user_id = @user_id
-                ORDER BY created_at DESC;
-            ";
+            // Base query
+            var sql = @"
+        SELECT id, title, content, status, priority, created_at, updated_at
+        FROM tasks
+        WHERE user_id = @user_id
+    ";
+
+            // Add optional filters
+            var filterByStatus = !string.IsNullOrEmpty(StatusFilter);
+            var filterByPriority = PriorityFilter.HasValue;
+
+            if (filterByStatus)
+            {
+                sql += " AND status = @status";
+            }
+
+            if (filterByPriority)
+            {
+                sql += " AND priority = @priority";
+            }
+
+            sql += " ORDER BY created_at DESC;";
 
             using var cmd = new NpgsqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@user_id", userId);
+
+            if (filterByStatus)
+            {
+                cmd.Parameters.AddWithValue("@status", StatusFilter!);
+            }
+
+            if (filterByPriority)
+            {
+                cmd.Parameters.AddWithValue("@priority", PriorityFilter.Value);
+            }
 
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
@@ -177,6 +209,7 @@ namespace TaskPilot.Pages
                 Tasks.Add(task);
             }
         }
+
 
         public class TaskItem
         {
