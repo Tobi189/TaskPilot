@@ -419,7 +419,8 @@
                 <button type="button" class="new-task-close" id="closeNewTask">&times;</button>
             </div>
 
-            <form method="post">
+            <form method="post" asp-page-handler="CreateTask">
+
                 <!-- later we'll add asp-page-handler="CreateTask" -->
                 <div class="new-task-body">
                     <div class="form-group">
@@ -512,41 +513,65 @@
             </div>
 
             <div class="task-list">
-                @* Dummy rows for now – later replace with foreach over Model.Tasks *@
-                <div class="task-row">
-                    <div class="task-main">
-                        <div class="task-title">Example task title</div>
-                        <div class="task-preview">
-                            Short description of what needs to be done with this task…
-                        </div>
-                        <div class="task-tags">
-                            <span class="badge-status badge-status-pending">Pending</span>
-                            <span class="badge-priority badge-priority-high">High</span>
-                        </div>
+                @if (Model.Tasks == null || Model.Tasks.Count == 0)
+                {
+                    <div class="task-empty">
+                        You don't have any tasks yet. Click "New Task" to create one.
                     </div>
-                    <div class="task-actions">
-                        <button class="task-link">Edit</button>
-                        <button class="task-link">Delete</button>
-                    </div>
-                </div>
+                }
+                else
+                {
+                    @foreach (var task in Model.Tasks)
+                    {
+                        var statusClass = task.Status switch
+                        {
+                            "in_progress" => "badge-status-inprogress",
+                            "done" => "badge-status-done",
+                            _ => "badge-status-pending"
+                        };
 
-                <div class="task-row">
-                    <div class="task-main">
-                        <div class="task-title">Another demo task</div>
-                        <div class="task-preview">
-                            This one is already in progress to show a different status badge.
+                        var statusLabel = task.Status switch
+                        {
+                            "in_progress" => "In progress",
+                            "done" => "Done",
+                            "pending" => "Pending",
+                            _ => task.Status
+                        };
+
+                        var priorityClass = task.Priority switch
+                        {
+                            2 => "badge-priority-high",
+                            1 => "badge-priority-medium",
+                            _ => "badge-priority-low"
+                        };
+
+                        var priorityLabel = task.Priority switch
+                        {
+                            2 => "High",
+                            1 => "Medium",
+                            _ => "Low"
+                        };
+
+                        <div class="task-row">
+                            <div class="task-main">
+                                <div class="task-title">@task.Title</div>
+                                <div class="task-preview">
+                                    @task.Content
+                                </div>
+                                <div class="task-tags">
+                                    <span class="badge-status @statusClass">@statusLabel</span>
+                                    <span class="badge-priority @priorityClass">@priorityLabel</span>
+                                </div>
+                            </div>
+                            <div class="task-actions">
+                                <button class="task-link">Edit</button>
+                                <button class="task-link">Delete</button>
+                            </div>
                         </div>
-                        <div class="task-tags">
-                            <span class="badge-status badge-status-inprogress">In progress</span>
-                            <span class="badge-priority badge-priority-medium">Medium</span>
-                        </div>
-                    </div>
-                    <div class="task-actions">
-                        <button class="task-link">Edit</button>
-                        <button class="task-link">Delete</button>
-                    </div>
-                </div>
+                    }
+                }
             </div>
+
         </section>
     </main>
 </div>
