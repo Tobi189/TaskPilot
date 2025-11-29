@@ -564,6 +564,11 @@
                                     <span class="badge-status @statusClass">@statusLabel</span>
                                     <span class="badge-priority @priorityClass">@priorityLabel</span>
                                 </div>
+                                <div class="task-meta">
+                                    Created @task.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+                                    · Updated @task.UpdatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+                                </div>
+
                             </div>
                             <div class="task-actions">
                                 <button type="button"
